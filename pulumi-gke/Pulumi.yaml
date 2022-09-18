@@ -1,0 +1,12 @@
+name: pulumi-gke-poibee
+description: Install PoiBee microservices in Google Kubernetes Engine (GKE) by creating a GKE cluster and deployments with services for the docker images of the microservices.
+runtime: nodejs
+template:
+  config:
+    gcp:project:
+      description: The Google Cloud project to deploy into
+    gcp:zone:
+      description: The Google Cloud zone
+    gcp:credentials:
+      description: Your GCP Service Account key contents for GKE Administration
+      secret: true
