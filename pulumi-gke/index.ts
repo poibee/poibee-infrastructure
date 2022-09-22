@@ -49,9 +49,7 @@ export const clusterName = poibeeGcpCluster.name;
 // Manufacture a GKE-style kubeconfig. Note that this is slightly "different"
 // because of the way GKE requires gcloud to be in the picture for cluster
 // authentication (rather than using the client cert/key directly).
-export const kubeconfig = pulumi.
-all([ poibeeGcpCluster.name, poibeeGcpCluster.endpoint, poibeeGcpCluster.masterAuth ]).
-apply(([ name, endpoint, masterAuth ]) => {
+export const kubeconfig = pulumi.all([poibeeGcpCluster.name, poibeeGcpCluster.endpoint, poibeeGcpCluster.masterAuth]).apply(([name, endpoint, masterAuth]) => {
     const context = `${gcp.config.project}_${gcp.config.zone}_${name}`;
     return `apiVersion: v1
 clusters:
@@ -88,14 +86,14 @@ const clusterProvider = new k8s.Provider(name, {
 });
 
 // Create a Kubernetes Namespace
-const ns = new k8s.core.v1.Namespace(name, {}, { provider: clusterProvider });
+const ns = new k8s.core.v1.Namespace(name, {}, {provider: clusterProvider});
 
 // Export the Namespace name
 export const namespaceName = ns.metadata.name;
 
 function createDeploymentWithService(
     appName: string,
-    serviceType: string,
+    serviceType: k8s.types.enums.core.v1.ServiceSpecType,
     servicePort: number,
     clusterProvider: k8s.Provider,
     namespace: k8s.core.v1.Namespace):
@@ -103,7 +101,7 @@ function createDeploymentWithService(
 
     const deploymentName = "poibee-" + appName;
     const imageName = "ghcr.io/poibee/poibee-" + appName + ":main";
-    const labelsDeployment = { appClass: deploymentName };
+    const labelsDeployment = {appClass: deploymentName};
 
     const deployment = new k8s.apps.v1.Deployment(deploymentName,
         {
@@ -113,7 +111,7 @@ function createDeploymentWithService(
             },
             spec: {
                 replicas: 1,
-                selector: { matchLabels: labelsDeployment },
+                selector: {matchLabels: labelsDeployment},
                 template: {
                     metadata: {
                         labels: labelsDeployment,
@@ -123,7 +121,7 @@ function createDeploymentWithService(
                             {
                                 name: deploymentName,
                                 image: imageName,
-                                ports: [{ name: "http", containerPort: servicePort }],
+                                ports: [{name: "http", containerPort: servicePort}],
                             },
                         ],
                     },
@@ -144,7 +142,7 @@ function createDeploymentWithService(
             },
             spec: {
                 type: serviceType,
-                ports: [{ port: servicePort, targetPort: "http" }],
+                ports: [{port: servicePort, targetPort: "http"}],
                 selector: labelsDeployment,
             },
         },
@@ -173,7 +171,41 @@ export const serviceNameApp = deploymentWithServiceApp.service.metadata.name;
 /**
  * PoiBee-Infrastructure
  */
-const deploymentWithServiceInfrastructure = createDeploymentWithService("infrastructure", "LoadBalancer", 80, clusterProvider, ns);
+const deploymentWithServiceInfrastructure = createDeploymentWithService("infrastructure", "NodePort", 80, clusterProvider, ns);
 export const deploymentNameInfrastructure = deploymentWithServiceInfrastructure.deployment.metadata.name;
 export const serviceNameInfrastructure = deploymentWithServiceInfrastructure.service.metadata.name;
-export const servicePublicIpInfrastucture = deploymentWithServiceInfrastructure.service.status.loadBalancer.ingress[0].ip;
+
+/**
+ * PoiBee-Global-Ingress
+ */
+const ingressGlobal = new k8s.networking.v1.Ingress("poibee", {
+    metadata: {
+        namespace: namespaceName,
+        annotations: {
+            "kubernetes.io/ingress.class": "gce",
+        },
+        name: "poibee",
+    },
+    spec: {
+        rules: [{
+            http: {
+                paths: [{
+                    path: "/*",
+                    pathType: "ImplementationSpecific",
+                    backend: {
+                        service: {
+                            name: "poibee-infrastructure",
+                            port: {
+                                number: 80,
+                            },
+                        },
+                    },
+                }],
+            },
+        }],
+    },
+}, {
+    provider: clusterProvider
+});
+
+export const ingressNameGlobal = ingressGlobal.metadata.name;

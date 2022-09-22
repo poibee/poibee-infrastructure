@@ -106,6 +106,13 @@ Duration: 12m5s
 * kubectl get all -n poibee-59edb494
 * kubectl run -i --tty busybox --image=busybox:1.28 --namespace poibee-9e7f2c64 --rm -- sh
 
+## Debug 
+
+kubectl get ingress -n poibee-9e7f2c64 
+kubectl delete ingress -n poibee-9e7f2c64 poibee
+pulumi stack --show-urns
+pulumi state delete 'urn:pulumi:dev::pulumi-gke-poibee::kubernetes:networking.k8s.io/v1:Ingress::poibee'
+
 ## Tear down environment
 
 * pulumi destroy --yes
