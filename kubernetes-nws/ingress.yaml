@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: poibee-ingress
+  namespace: poibee
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: tls-secret-poibee-prod
+      hosts:
+        - "poibee.de"
+  rules:
+    - host: "poibee.de"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: poibee-infrastructure
+                port:
+                  number: 80
