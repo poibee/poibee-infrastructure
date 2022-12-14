@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poibee-app
+  namespace: poibee
+  labels:
+    app: poibee-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poibee-app
+  template:
+    metadata:
+      labels:
+        app: poibee-app
+    spec:
+      containers:
+        - image: ghcr.io/poibee/poibee-app:main
+          imagePullPolicy: Always
+          name: poibee-app
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poibee-app
+  namespace: poibee
+  labels:
+    app: poibee-app
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: poibee-app

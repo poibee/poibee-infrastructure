@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poibee-overpass
+  namespace: poibee
+  labels:
+    app: poibee-overpass
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poibee-overpass
+  template:
+    metadata:
+      labels:
+        app: poibee-overpass
+    spec:
+      containers:
+        - image: ghcr.io/poibee/poibee-overpass:main
+          imagePullPolicy: Always
+          name: poibee-overpass
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poibee-overpass
+  namespace: poibee
+  labels:
+    app: poibee-overpass
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: poibee-overpass
