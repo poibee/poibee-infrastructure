@@ -8,15 +8,15 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-    - secretName: tls-secret-poibee-prod
-      hosts:
-        - "poibee.de"
+    - hosts:
+        - poibee.de
+      secretName: tls-secret-poibee-prod
   rules:
-    - host: "poibee.de"
+    - host: poibee.de
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          - pathType: Prefix
+            path: /
             backend:
               service:
                 name: poibee-infrastructure
