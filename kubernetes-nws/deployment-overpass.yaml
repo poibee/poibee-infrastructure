@@ -41,3 +41,31 @@ spec:
     - port: 3000
   selector:
     app: poibee-overpass
+---
+# https://kubernetes.github.io/ingress-nginx/examples/rewrite/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: poibee-ingress-overpass
+  namespace: poibee
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - poibee.de
+      secretName: tls-secret-poibee-prod
+  rules:
+    - host: poibee.de
+      http:
+        paths:
+          - pathType: Prefix
+            path: /api/overpass(/|$)(.*)
+            backend:
+              service:
+                name: poibee-overpass
+                port:
+                  number: 3000

@@ -7,11 +7,6 @@ services:
   app:
     image: ghcr.io/poibee/poibee-app:main
     container_name: poibee-app
-  infrastructure:
-    image: ghcr.io/poibee/poibee-infrastructure:main
-    container_name: poibee-infrastructure
-    ports:
-      - "80:80"
   busybox:
     # use: 'docker attach poibee-busybox'
     image: busybox:latest
