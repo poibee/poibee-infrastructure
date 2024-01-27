@@ -22,6 +22,8 @@ jobs:
           cd helm
           umask 066; echo "$POIBEE_KUBECONF" > local-kubeconf.conf
           export KUBECONFIG=local-kubeconf.conf
-          helm -n poibee upgrade poibee-app-chart poibee-app/ --values poibee-app/values.yaml
-          helm -n poibee upgrade poibee-overpass-chart poibee-overpass/ --values poibee-overpass/values.yaml
+          helm -n poibee uninstall poibee-app-chart
+          helm -n poibee install poibee-app-chart poibee-app/ --values poibee-app/values.yaml
+          helm -n poibee uninstall poibee-overpass-chart
+          helm -n poibee install poibee-overpass-chart poibee-overpass/ --values poibee-overpass/values.yaml
           helm -n poibee ls
