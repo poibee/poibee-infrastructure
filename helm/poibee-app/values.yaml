@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/poibee/poibee-app
   pullPolicy: Always
-  tag: "main"
+  tag: "92-migrate-ionic"
 
 imagePullSecrets: []
 nameOverride: ""
